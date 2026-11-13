@@ -15,8 +15,11 @@ if [ $mode = bump ]; then
   sed -i -E "s/^(TOOLCHAIN_REF \?= )v[0-9]+\.[0-9]+/\1$v/" templates/Makefile
   sed -i -E "s/(ci\.yml@)v[0-9]+\.[0-9]+/\1$v/" templates/ci.yml
   scripts/check_release.sh "$v"; tests/smoke.sh
+  if git diff --quiet; then echo "pins already at $v, nothing to bump. After main has them: scripts/release.sh --tag $v"; exit 0; fi
   git commit -qam "Release $v: bump version pins" && echo "committed. Open a PR; after it merges: scripts/release.sh --tag $v"
 else
+  git fetch -q origin main
+  [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ] || { echo "--tag must run on HEAD == origin/main (git checkout main && git pull)"; exit 1; }
   scripts/check_release.sh "$v"
   git tag "$v" && echo "tagged $v at $(git rev-parse --short HEAD). Push: git push origin $v"
 fi
