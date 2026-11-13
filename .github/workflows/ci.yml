@@ -1,0 +1,23 @@
+name: chip-ci
+on:
+  workflow_call:
+    inputs:
+      toolchain_ref: { type: string, default: v0.1 }
+    secrets:
+      TOOLCHAIN_TOKEN: { required: false }
+jobs:
+  ci:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: TuriChips/toolchain
+          ref: ${{ inputs.toolchain_ref }}
+          path: .toolchain
+          token: ${{ secrets.TOOLCHAIN_TOKEN || github.token }}
+      - run: sudo apt-get update && sudo apt-get install -y verilator yosys make
+      - run: make all
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: logs, path: logs/ }
