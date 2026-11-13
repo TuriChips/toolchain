@@ -19,10 +19,12 @@ for f in tests/random/run.sh tests/run_4state.sh; do
 done
 # Pin check: chip.mk must fail when the checkout is not the pinned tag, pass when it is.
 T="$(mktemp -d)"; trap 'rm -rf "$W" "$T"' EXIT
-git clone -q "$TC" "$T/tc" && git -C "$T/tc" tag -f pin-test >/dev/null
+git clone -q "$TC" "$T/tc" && git -C "$T/tc" tag -f pin-test >/dev/null; git -C "$T/tc" tag -f pin-test2 >/dev/null
 printf 'TC=%s\nTOOLCHAIN_REF=pin-test\ninclude $(TC)/chip.mk\n' "$T/tc" >"$T/Makefile"
 cp "$TC/chip.mk" "$T/tc/chip.mk"
 make -s -C "$T" -n test >/dev/null 2>&1 || { echo "smoke: matching pin rejected"; exit 1; }
-sed -i 's/pin-test/other/' "$T/Makefile"
+sed -i 's/pin-test$/pin-test2/' "$T/Makefile"   # second tag on the same commit must also match
+make -s -C "$T" -n test >/dev/null 2>&1 || { echo "smoke: second tag on same commit rejected"; exit 1; }
+sed -i 's/pin-test2/other/' "$T/Makefile"
 if make -s -C "$T" -n test >/dev/null 2>&1; then echo "smoke: pin mismatch not detected"; exit 1; fi
 echo "smoke: ok"
