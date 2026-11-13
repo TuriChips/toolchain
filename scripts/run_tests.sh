@@ -7,7 +7,7 @@
 # Logs: logs/<run>/<block>.log, summary in logs/<run>/summary.md, logs/latest -> run.
 set -u
 cd "$(git rev-parse --show-toplevel)"; TC="$(cd "$(dirname "$0")/.." && pwd)"
-run="logs/$(date -u +%Y%m%dT%H%M%SZ)"; mkdir -p "$run"
+run="logs/$(date -u +%Y%m%dT%H%M%S%NZ)"; mkdir -p "$run"
 want_random=0; blocks=(); for a in "$@"; do [ "$a" = random ] && want_random=1 || blocks+=("$a"); done
 [ $# -eq 0 ] && [ ${#blocks[@]} -eq 0 ] && mapfile -t blocks < <(find tb -mindepth 2 -maxdepth 2 -name files.f -printf '%h\n' 2>/dev/null | sed 's|^tb/||' | sort)
 "$TC/scripts/versions.sh" "$run/tool-versions.txt" >/dev/null || { echo "missing tool, see $run/tool-versions.txt"; exit 2; }
