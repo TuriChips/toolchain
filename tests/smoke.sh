@@ -17,4 +17,12 @@ cp tb/ok/tb.sv /tmp/ok.$$; sed -i 's/PASS/FAIL/' tb/ok/tb.sv; mustfail "failing 
 for f in tests/random/run.sh tests/run_4state.sh; do
   cp "$f" "$f.bak"; echo "exit 1" >>"$f"; mustfail "failing $f"; mv "$f.bak" "$f"
 done
+# Pin check: chip.mk must fail when the checkout is not the pinned tag, pass when it is.
+T="$(mktemp -d)"; trap 'rm -rf "$W" "$T"' EXIT
+git clone -q "$TC" "$T/tc" && git -C "$T/tc" tag -f pin-test >/dev/null
+printf 'TC=%s\nTOOLCHAIN_REF=pin-test\ninclude $(TC)/chip.mk\n' "$T/tc" >"$T/Makefile"
+cp "$TC/chip.mk" "$T/tc/chip.mk"
+make -s -C "$T" -n test >/dev/null 2>&1 || { echo "smoke: matching pin rejected"; exit 1; }
+sed -i 's/pin-test/other/' "$T/Makefile"
+if make -s -C "$T" -n test >/dev/null 2>&1; then echo "smoke: pin mismatch not detected"; exit 1; fi
 echo "smoke: ok"
