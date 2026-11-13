@@ -1,0 +1,10 @@
+name: self-check
+on: [pull_request]
+jobs:
+  self:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y verilator yosys make iverilog python3
+      - run: for f in scripts/*.sh tests/smoke.sh; do bash -n "$f"; done
+      - run: tests/smoke.sh
