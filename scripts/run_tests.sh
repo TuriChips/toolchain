@@ -18,6 +18,15 @@ for b in "${blocks[@]}"; do
   then r=PASS; pass=$((pass+1)); else r=FAIL; fail=$((fail+1)); fi
   rows+="| $b | $r | $log |"$'\n'; echo "$r $b"
 done
+# Exhaustive/random comparison (Rook): tests/random/run.sh, if the chip repo has it.
+if [ -x tests/random/run.sh ] || [ -f tests/random/run.sh ]; then
+  tests/random/run.sh >"$run/random-run.log" 2>&1; rc=$?
+  src="$(readlink logs/latest 2>/dev/null)"
+  [ -n "$src" ] && [ "$src" != "$(basename "$run")" ] && cp "logs/$src"/random-*.log "$run"/ 2>/dev/null
+  if [ $rc -eq 0 ]; then r=PASS; pass=$((pass+1)); else r=FAIL; fail=$((fail+1)); fi
+  rows+="| random (tests/random/run.sh) | $r | $run/random-*.log |"$'\n'; echo "$r random"; cat "$run/random-run.log"
+  blocks+=(random)
+fi
 { echo "# Test summary $(date -u +%F)"; echo "run: $run  run=${#blocks[@]} pass=$pass fail=$fail"; echo
   echo "| block | result | log |"; echo "|---|---|---|"; printf '%s' "$rows"; } >"$run/summary.md"
 ln -sfn "$(basename "$run")" logs/latest

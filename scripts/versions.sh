@@ -14,6 +14,7 @@ TC="$(cd "$(dirname "$0")/.." && pwd)"
   for t in verilator yosys; do want=$(sed -n "s/^$t=//p" "$TC/VERSIONS")
     command -v $t >/dev/null && ! $t --version 2>&1 | grep -q "$want" && { echo "$t: version mismatch, pinned $want"; rc=1; }
   done
+  command -v iverilog >/dev/null && echo "iverilog: $(iverilog -V 2>&1 | head -1)"
   echo "toolchain: $(git -C "$TC" describe --tags --always 2>/dev/null)"
 } | tee "$out"
 exit $rc

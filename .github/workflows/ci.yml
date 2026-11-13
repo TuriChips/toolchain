@@ -16,7 +16,7 @@ jobs:
           ref: ${{ inputs.toolchain_ref }}
           path: .toolchain
           token: ${{ secrets.TOOLCHAIN_TOKEN || github.token }}
-      - run: sudo apt-get update && sudo apt-get install -y verilator yosys make
+      - run: sudo apt-get update && sudo apt-get install -y verilator yosys make iverilog python3
       - run: make all
       - if: always()
         uses: actions/upload-artifact@v4
