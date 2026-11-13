@@ -8,7 +8,8 @@
 set -u
 cd "$(git rev-parse --show-toplevel)"; TC="$(cd "$(dirname "$0")/.." && pwd)"
 run="logs/$(date -u +%Y%m%dT%H%M%S%NZ)"; mkdir -p "$run"
-want_random=0; blocks=(); for a in "$@"; do [ "$a" = random ] && want_random=1 || blocks+=("$a"); done
+want_random=0; want_4state=0; blocks=()
+for a in "$@"; do case "$a" in random) want_random=1;; 4state) want_4state=1;; *) blocks+=("$a");; esac; done
 [ $# -eq 0 ] && [ ${#blocks[@]} -eq 0 ] && mapfile -t blocks < <(find tb -mindepth 2 -maxdepth 2 -name files.f -printf '%h\n' 2>/dev/null | sed 's|^tb/||' | sort)
 "$TC/scripts/versions.sh" "$run/tool-versions.txt" >/dev/null || { echo "missing tool, see $run/tool-versions.txt"; exit 2; }
 pass=0; fail=0; rows=""
@@ -26,6 +27,16 @@ if [ -f tests/random/run.sh ] && { [ $# -eq 0 ] || [ "$want_random" = 1 ]; }; th
   if [ $rc -eq 0 ]; then r=PASS; pass=$((pass+1)); else r=FAIL; fail=$((fail+1)); fi
   rows+="| random (tests/random/run.sh) | $r | $run/random-*.log |"$'\n'; echo "$r random"; cat "$run/random-run.log"
   blocks+=(random)
+fi
+# 4-state (Icarus) run of X/Z checks (Quinn): tests/run_4state.sh. Same gating as random.
+# It logs to logs/4state/; remove stale logs first, then copy into this run's dir.
+if [ -f tests/run_4state.sh ] && { [ $# -eq 0 ] || [ "$want_4state" = 1 ]; }; then
+  rm -rf logs/4state
+  bash tests/run_4state.sh >"$run/4state-run.log" 2>&1; rc=$?
+  for f in logs/4state/*.log; do [ -f "$f" ] && cp "$f" "$run/4state-$(basename "$f")"; done
+  if [ $rc -eq 0 ]; then r=PASS; pass=$((pass+1)); else r=FAIL; fail=$((fail+1)); fi
+  rows+="| 4state (tests/run_4state.sh) | $r | $run/4state-run.log |"$'\n'; echo "$r 4state"; cat "$run/4state-run.log"
+  blocks+=(4state)
 fi
 { echo "# Test summary $(date -u +%F)"; echo "run: $run  run=${#blocks[@]} pass=$pass fail=$fail"; echo
   echo "| block | result | log |"; echo "|---|---|---|"; printf '%s' "$rows"; } >"$run/summary.md"
