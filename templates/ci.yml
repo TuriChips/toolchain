@@ -1,0 +1,7 @@
+# Copy to .github/workflows/ci.yml in the chip repo.
+name: ci
+on: [pull_request, push]
+jobs:
+  ci:
+    uses: TuriChips/toolchain/.github/workflows/ci.yml@v0.1
+    secrets: inherit
