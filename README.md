@@ -9,3 +9,5 @@ Tool versions are pinned in `VERSIONS`; a mismatch fails the run. Chips pin a to
 Releases: `scripts/release.sh vX.Y` on a branch (bumps all pins, commits), PR, then `scripts/release.sh --tag vX.Y` on main. A tag push runs `check_release.sh`, so a tag with stale pins goes red.
 If `.toolchain` is not at the pinned tag, `make` stops with "toolchain mismatch": bump `TOOLCHAIN_REF` and the `@tag` in `.github/workflows/ci.yml` together and `rm -rf .toolchain`. For toolchain development, `make TOOLCHAIN_REF=` turns the check off.
 Logs: `logs/<run>/` with `summary.md`, per-block logs and `tool-versions.txt`.
+
+Layout tools (Tesla): `scripts/install_layout_tools.sh` installs OpenROAD, KLayout, Magic and the sky130 PDK without root (micromamba, into `~/tools`). `source scripts/eda-env.sh` puts them on PATH and sets `PDK_ROOT` and `PDK=sky130A`. PDK path on the lab VM: `~/tools/mm/root/envs/pdk/share/pdk/sky130A`. Pins are in `VERSIONS`; `versions.sh` fails on a mismatch if the tool is on PATH.
