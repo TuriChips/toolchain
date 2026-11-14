@@ -27,4 +27,10 @@ sed -i 's/pin-test$/pin-test2/' "$T/Makefile"   # second tag on the same commit 
 make -s -C "$T" -n test >/dev/null 2>&1 || { echo "smoke: second tag on same commit rejected"; exit 1; }
 sed -i 's/pin-test2/other/' "$T/Makefile"
 if make -s -C "$T" -n test >/dev/null 2>&1; then echo "smoke: pin mismatch not detected"; exit 1; fi
+# Template Makefile must reject a checkout that lacks the chip.mk check (an old .toolchain).
+old="$(mktemp -d)"; git clone -q "$TC" "$old/chip" && cd "$old/chip" && git tag v0.0-old && cd - >/dev/null
+sed 's|^TOOLCHAIN_REF ?= .*|TOOLCHAIN_REF ?= v9.9|; s|^TC := .*|TC := '"$old"'/chip|' "$TC/templates/Makefile" >"$old/Makefile"
+printf '# stub: old chip.mk without a pin check\ntest:\n\t@true\n' >"$old/chip/chip.mk"
+if make -s -C "$old" test >/dev/null 2>&1; then echo "smoke: template Makefile accepted a wrong-tag .toolchain"; exit 1; fi
+rm -rf "$old"
 echo "smoke: ok"
