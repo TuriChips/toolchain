@@ -2,7 +2,7 @@ name: chip-ci
 on:
   workflow_call:
     inputs:
-      toolchain_ref: { type: string, default: v0.6 }
+      toolchain_ref: { type: string, default: v0.7 }
     secrets:
       TOOLCHAIN_TOKEN: { required: false }
 jobs:
