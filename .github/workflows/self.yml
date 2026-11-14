@@ -9,8 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt-get update && sudo apt-get install -y verilator yosys make iverilog python3
-      - run: for f in scripts/*.sh tests/smoke.sh; do bash -n "$f"; done
+      - run: for f in scripts/*.sh tests/smoke.sh tests/fetch_sky130_models_test.sh; do bash -n "$f"; done
       - run: tests/smoke.sh
+      - run: tests/fetch_sky130_models_test.sh
       - name: Tag must carry its own version pins
         if: startsWith(github.ref, 'refs/tags/v')
         run: scripts/check_release.sh "$GITHUB_REF_NAME"
