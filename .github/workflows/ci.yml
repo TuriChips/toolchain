@@ -24,6 +24,21 @@ jobs:
           path: ~/.cache/turichips/pdk
           key: sky130-models-${{ hashFiles('.toolchain/VERSIONS') }}
       - run: echo "PDK_ROOT=$(.toolchain/scripts/fetch_sky130_models.sh)" >> "$GITHUB_ENV"
+      # MAME for chip acceptance tests (chip-4004 acc3): only if the chip ships fetch_mame.sh.
+      # Cached on the Ubuntu package version; the script is a no-op on a cache hit.
+      - id: mame
+        run: |
+          if [ -x tests/random/acc3/fetch_mame.sh ]; then
+            echo "use=true" >> "$GITHUB_OUTPUT"
+            echo "ver=$(apt-cache policy mame | sed -n 's/^ *Candidate: //p')" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.mame.outputs.use == 'true'
+        uses: actions/cache@v4
+        with:
+          path: build/mame
+          key: mame-${{ runner.os }}-${{ steps.mame.outputs.ver }}
+      - if: steps.mame.outputs.use == 'true'
+        run: tests/random/acc3/fetch_mame.sh
       - run: make all
       - if: always()
         uses: actions/upload-artifact@v4
