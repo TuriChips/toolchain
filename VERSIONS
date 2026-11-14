@@ -1,2 +1,6 @@
 verilator=5.020
 yosys=0.33
+openroad=2.0_3175_gf12e2f474
+klayout=0.30.13
+magic=8.3.465
+sky130_pdk=1.0.471

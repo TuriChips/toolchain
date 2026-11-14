@@ -14,6 +14,16 @@ TC="$(cd "$(dirname "$0")/.." && pwd)"
   for t in verilator yosys; do want=$(sed -n "s/^$t=//p" "$TC/VERSIONS")
     command -v $t >/dev/null && ! $t --version 2>&1 | grep -q "$want" && { echo "$t: version mismatch, pinned $want"; rc=1; }
   done
+  # layout tools: optional (not every runner has them) but pinned when present
+  for t in openroad klayout magic; do
+    command -v $t >/dev/null || { echo "$t: not installed (optional)"; continue; }
+    case $t in openroad) got=$(openroad -version 2>&1 | head -1);; klayout) got=$(klayout -v 2>&1 | head -1);; magic) got=$(magic --version 2>&1 | head -1);; esac
+    echo "$t: $got"
+    want=$(sed -n "s/^$t=//p" "$TC/VERSIONS")
+    case $t in openroad) want=${want##*_g};; esac
+    echo "$got" | grep -q "$want" || { echo "$t: version mismatch, pinned $want"; rc=1; }
+  done
+  [ -d "${PDK_ROOT:-/nonexistent}/sky130A" ] && echo "sky130A: $PDK_ROOT/sky130A"
   command -v iverilog >/dev/null && echo "iverilog: $(iverilog -V 2>&1 | head -1)"
   echo "toolchain: $(git -C "$TC" describe --tags --always 2>/dev/null)"
 } | tee "$out"
