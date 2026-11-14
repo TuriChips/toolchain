@@ -29,10 +29,10 @@ if [ -f tests/random/run.sh ] && { [ $# -eq 0 ] || [ "$want_random" = 1 ]; }; th
   blocks+=(random)
 fi
 # 4-state (Icarus) run of X/Z checks (Quinn): tests/run_4state.sh. Same gating as random.
-# It logs to logs/4state/; remove stale logs first, then copy into this run's dir.
+# RUN_DIR makes it log into this run's dir; older scripts log to logs/4state/, which is copied as a fallback.
 if [ -f tests/run_4state.sh ] && { [ $# -eq 0 ] || [ "$want_4state" = 1 ]; }; then
   rm -rf logs/4state
-  bash tests/run_4state.sh >"$run/4state-run.log" 2>&1; rc=$?
+  RUN_DIR="$run" bash tests/run_4state.sh >"$run/4state-run.log" 2>&1; rc=$?
   for f in logs/4state/*.log; do [ -f "$f" ] && cp "$f" "$run/4state-$(basename "$f")"; done
   if [ $rc -eq 0 ]; then r=PASS; pass=$((pass+1)); else r=FAIL; fail=$((fail+1)); fi
   rows+="| 4state (tests/run_4state.sh) | $r | $run/4state-run.log |"$'\n'; echo "$r 4state"; cat "$run/4state-run.log"
