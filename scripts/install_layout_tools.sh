@@ -18,5 +18,8 @@ LH="-c litex-hub -c conda-forge"
 "$MM" create -y -q -n openroad $LH "openroad=$(v openroad)*"
 "$MM" create -y -q -n klayout  -c conda-forge "klayout=$(v klayout)"
 "$MM" create -y -q -n magic    $LH "magic=$(v magic)*"
+"$MM" create -y -q -n poppler -c conda-forge "poppler=$(v poppler)*"
+# pdftoppm etc. on the default PATH (the Read tool renders PDF pages with pdftoppm)
+mkdir -p "$HOME/.local/bin"; for t in pdftoppm pdftotext pdfimages pdfinfo; do ln -sf "$EDA_HOME/mm/root/envs/poppler/bin/$t" "$HOME/.local/bin/$t"; done
 "$MM" create -y -q -n pdk      $LH "open_pdks.sky130a=$(v sky130_pdk)*"
 echo "done. source $TC/scripts/eda-env.sh"
