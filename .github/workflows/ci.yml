@@ -17,6 +17,13 @@ jobs:
           path: .toolchain
           token: ${{ secrets.TOOLCHAIN_TOKEN || github.token }}
       - run: sudo apt-get update && sudo apt-get install -y verilator yosys make iverilog python3
+      # sky130 cell models for gate-level sims (Verilog only, fetched not committed). Cold fetch ~4 min.
+      - uses: actions/cache@v4
+        id: pdk
+        with:
+          path: ~/.cache/turichips/pdk
+          key: sky130-models-${{ hashFiles('.toolchain/VERSIONS') }}
+      - run: echo "PDK_ROOT=$(.toolchain/scripts/fetch_sky130_models.sh)" >> "$GITHUB_ENV"
       - run: make all
       - if: always()
         uses: actions/upload-artifact@v4
