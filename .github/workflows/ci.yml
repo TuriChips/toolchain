@@ -2,7 +2,7 @@ name: chip-ci
 on:
   workflow_call:
     inputs:
-      toolchain_ref: { type: string, default: v0.8 }
+      toolchain_ref: { type: string, default: v0.9 }
     secrets:
       TOOLCHAIN_TOKEN: { required: false }
 jobs:
@@ -31,12 +31,13 @@ jobs:
           if [ -x tests/random/acc3/fetch_mame.sh ]; then
             echo "use=true" >> "$GITHUB_OUTPUT"
             echo "ver=$(apt-cache policy mame | sed -n 's/^ *Candidate: //p')" >> "$GITHUB_OUTPUT"
+            echo "img=${ImageVersion:-unknown}" >> "$GITHUB_OUTPUT"
           fi
       - if: steps.mame.outputs.use == 'true'
         uses: actions/cache@v4
         with:
           path: build/mame
-          key: mame-${{ runner.os }}-${{ steps.mame.outputs.ver }}
+          key: mame-${{ runner.os }}-${{ steps.mame.outputs.img }}-${{ steps.mame.outputs.ver }}
       - if: steps.mame.outputs.use == 'true'
         run: tests/random/acc3/fetch_mame.sh
       - run: make all
