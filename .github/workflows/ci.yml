@@ -24,6 +24,15 @@ jobs:
           path: ~/.cache/turichips/pdk
           key: sky130-models-${{ hashFiles('.toolchain/VERSIONS') }}
       - run: echo "PDK_ROOT=$(.toolchain/scripts/fetch_sky130_models.sh)" >> "$GITHUB_ENV"
+      # OpenROAD (OpenSTA) for chip synth timing reports (chip-z80 synth/run.sh). Pinned in VERSIONS, cached.
+      - uses: actions/cache@v4
+        id: openroad
+        with:
+          path: ~/tools
+          key: openroad-${{ hashFiles('.toolchain/VERSIONS') }}
+      - run: ONLY=openroad .toolchain/scripts/install_layout_tools.sh
+        if: steps.openroad.outputs.cache-hit != 'true'
+      - run: echo "$HOME/tools/mm/root/envs/openroad/bin" >> "$GITHUB_PATH"
       # MAME for chip acceptance tests (chip-4004 acc3): only if the chip ships fetch_mame.sh.
       # Cached on the Ubuntu package version; the script is a no-op on a cache hit.
       - id: mame
