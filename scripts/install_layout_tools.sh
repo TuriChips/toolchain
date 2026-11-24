@@ -3,6 +3,7 @@
 # Usage: scripts/install_layout_tools.sh   -> tools in $EDA_HOME (default ~/tools)
 # Then:  source scripts/eda-env.sh
 # ONLY=openroad installs just that env (CI uses this). Versions are pinned in VERSIONS (openroad, klayout, magic, sky130_pdk).
+# openroad spec has no trailing * (micromamba 2.x cannot match "2.0_3175_g..*").
 # Separate envs, because conda cannot solve openroad and klayout together.
 set -eu
 EDA_HOME="${EDA_HOME:-$HOME/tools}"
@@ -16,7 +17,7 @@ if [ ! -x "$MM" ]; then
 fi
 LH="-c litex-hub -c conda-forge"
 only() { [ -z "${ONLY:-}" ] || [ "$ONLY" = "$1" ]; }
-if only openroad; then "$MM" create -y -q -n openroad $LH "openroad=$(v openroad)*"; fi
+if only openroad; then "$MM" create -y -q -n openroad $LH "openroad=$(v openroad)"; fi
 if only klayout; then "$MM" create -y -q -n klayout -c conda-forge "klayout=$(v klayout)"; fi
 if only magic; then "$MM" create -y -q -n magic $LH "magic=$(v magic)*"; fi
 if only poppler; then
